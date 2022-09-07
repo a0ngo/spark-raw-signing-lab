@@ -56,10 +56,11 @@ const eip_message = {
            rawMessageData:{
                messages: [
                    {
+                        // The 3 lines below are used for signing a bytestring.
                        content: Buffer.from('test').toString('hex'),
                        index: 0,
                        type: 'ETH_MESSAGE'
-                       // To use EIP712, uncomment the below 3 lines and comment out the above 3 lines (until including content).
+                       // To sign EIP712, uncomment the 3 lines below and comment out the 3 lines (until including content).
                        // content: eip_message,
                        // index: 0,
                        // type: 'EIP712'

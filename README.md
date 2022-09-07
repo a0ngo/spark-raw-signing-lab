@@ -25,7 +25,7 @@ For that purpose EIP-712 was created along with a new scheme to allow the signin
 EIP-712 provides a guide on hashing and signing typed data structures, wherein the user will be presented with a pre-hashed message that is easy to decipher and readable to the user.<br>
 Examples of usages for either operation are:
 1. Proof of wallet ownership to a third party, or regulator
-2. Signing gas-less transactions
+2. Signing gasless transactions
 3. Getting signatures for key derivation (StarkEx for example)
 
 This lab will cover how Fireblocks’ API allows you to perform a simple proof of ownership signature, as well as a more complex EIP-712 signature.<br>
@@ -63,7 +63,7 @@ Raw signing allows users to sign any arbitrary message. This feature is highly i
     EIP-712 is provided not as a bytestring but rather as a complex data structure; the following constant is the data structure. More inforamtion can be read from the link at the top of the basic lab description. Comments within the code explain what each object / key is responsible for.
     ```
     const eip_message = {
-    "types": { // Each type defined a type of an object, with each object type containing definition of internal fields and their corresponding types
+    "types": { // Each type defines an object and each object contains definitions of internal fields and their corresponding data type
         "example_eip712": [ // Our example eip712 type only has a single field called value of type string
             {
                 "name": "value",
@@ -90,10 +90,10 @@ Raw signing allows users to sign any arbitrary message. This feature is highly i
         "chainId": 1,
         "version": "1.0"
     },
-    "message": { // The message to sign 
+    "message": { // The message to sign. This message is of the same type as specified in "primaryType" below, in our case example_eip712
         "value": "test 123123"
     },
-    "primaryType": "example_eip712" // The type that the message we need to sign is of
+    "primaryType": "example_eip712" // The type of the message that we want to sign
     };
     ```
 
@@ -233,30 +233,26 @@ Intermediate Python knowledge
 If you have created a designated Vault Account in the previous lab exercise, please use it, and skip to step 4.
  
 1. Create a new Vault Account with Eth_Test wallet:
-    On the Workspace > Accounts tab, click ![](images/add_va.png) and type in the name “VA<your group number>”.
+    On the Workspace > Accounts tab, click ![](images/add_va.png) and type in the name “VA\<your group number\>”.
 
     Result:<br>
     Your newly created Vault Account appears:<br>
     ![Result of creating a new vault account](images/va_created.png)
 
-2. In the Vault Account, click ![](images/add_wallet.png) and create an ETH_TEST wallet.<br>
+2. Create an instance of Fireblocks SDK: Follow this [documentation](https://docs.fireblocks.com/api/#getting-started).
 
-    Result:<br> 
-    The newly created Asset Wallet appears:<br>
-    ![Result of creating a new wallet](images/wallet_created.png)
-
-3. Create an instance of Fireblocks SDK: Follow this [documentation](https://docs.fireblocks.com/api/#getting-started).
-
-4. Generate a public key to be used as your Source address:
+3. Get the public key to compute your source address:
 
     **NOTE:**
     You will generate a public key to be used as your address.
 
-    Use a derivation path to generate your public key - The derivation path structure is an array of numbers as follows:<br>
+    Use a derivation path to get your public key - the derivation path structure is an array of numbers as follows ([Fireblocks HC Article](https://support.fireblocks.io/hc/en-us/articles/360014330819-Fireblocks-Vault-HD-Derivation-Paths)):<br>
     `[44, 765, VAULT-ID, 0, 0]`
 
     **NOTE:**
     Coin ID can be found in this [github](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) reference, however as Zenith does not have a coin Id in this table, we will use an unassigned ID 765.
+
+    Now you will obtain the public key using the derivation path above.
 
     Example:
     ```
@@ -264,8 +260,10 @@ If you have created a designated Vault Account in the previous lab exercise, ple
     pubkey =  fbks.get_public_key_info(algorithm=MPC_ECDSA_SECP256K1, derivation_path=derPath, compressed=False)
     ```
 
-5. Calculate your address based off your public key:
+4. Calculate your address based off your public key:
 
+    Since Zenith is an EVM based blockchain, deriving the address from the public key is done as shown below. For non-EVM, the address should be calculated according to the blockchain's specifications.
+    
     Example:
     ```
     keccak = keccak.new(digest_bits=256)
@@ -274,25 +272,27 @@ If you have created a designated Vault Account in the previous lab exercise, ple
     srcAddr = Web3.toChecksumAddress(srcAddr)
     ```
 
-    Repeat this step with the derivation path: [44,765,0,0,0] this will be the destination of our transaction (store it in a different variable).
+    Repeat this step with the derivation path: [44,765,0,0,0], this will be the destination address of our transaction (store the resulting address in a different variable).
 
-6. Construct web3 instance:
+5. Construct web3 instance:
     Use the [default builder](https://web3py.readthedocs.io/en/stable/quickstart.html#remote-providers) and the RPC endpoint for [zenith testnet](https://chainlist.org/chain/81).
 
     Example:
     ```
     from web3 import Web3
     from web3.gas_strategies.rpc import rpc_gas_price_strategy
+    ...
+    web3 = Web3(Web3.HTTPProvider('https://vilnius.zenithchain.co/http'))
     ```
 
-7. Obtain Zenith token to your recently created address:
-    Copy and paste your address to the [faucet](https://faucet.zenithchain.co/).
+6. Obtain the Zenith testnet token, send it to your calculated address (the source address calculated before):<br>
+    Copy and paste your source address to the [faucet](https://faucet.zenithchain.co/).
 
-    **NOTE:**
+    **NOTE:**<br>
     There is a queue to get tokens, and one is generated every minute, so it might take a few minutes to get a token. 
 
-8. Verify receiving the Zenith token
-    Check the balance on the address you’ve created.
+7. Verify receiving the Zenith token<br>
+    Check the balance of the source and destination addresses you’ve created. The variable `dstAddr` is the second address created in step 4.
 
     Example:
     ```
@@ -308,7 +308,7 @@ If you have created a designated Vault Account in the previous lab exercise, ple
 
     ```
     from web3.gas_strategies.rpc import rpc_gas_price_strategy
-    …
+    ...
     balance = web3.eth.getBalance(<src addr>)
     nonce = web3.eth.getTransactionCount(<src addr>)
     tx = {
@@ -323,17 +323,17 @@ If you have created a designated Vault Account in the previous lab exercise, ple
     gasPrice = web3.eth.generate_gas_price(tx)
     tx['gasPrice'] = gasPrice
     tx['value'] = tx['value'] - (21000 * gasPrice)
-    …
+    ...
     ```
 
 2. Obtain the hash to sign: 
 	Example:
     ```
     from eth_account._utils.legacy_transactions import (serializable_unsigned_transaction_from_dict)
-    …
+    ...
     unsignedTx = serializable_unsigned_transaction_from_dict(tx)
     msgToSign = unsignedTx.hash()
-    …
+    ...
     ```
 
 3. Sign the raw transaction
@@ -345,8 +345,8 @@ If you have created a designated Vault Account in the previous lab exercise, ple
 
     * **extraParameters**:<br>
     The structure should be the same as the [documentation](https://docs.fireblocks.com/api/#create-a-new-transaction:~:text=will%20be%20rejected-,extraParameters,-JSON%20object) ([rawMessageData](https://docs.fireblocks.com/api/#rawmessagedata)), note that in this scenario we will need to provide both the derivation path as well as the algorithm to use for signing:
-        * Content - msgToSign from the previous step
-        * Derivation path - derivation path used for the Source address (an array \ list of ints):<br>
+        * Content - should be `msgToSign.hex()[2:]` - this will convert the value of `msgToSign` to a hex value and remove the '0x' prefix.
+        * Derivation path - derivation path used for the source address (a **list** of ints):<br>
         `[44, 765, src_vault_id, 0, 0]`
         * Algorithm - same as used previously: `MPC_ECDSA_SECP256K1`
 
@@ -365,19 +365,20 @@ If you have created a designated Vault Account in the previous lab exercise, ple
     Continue to query the transaction, with a 5 second delay between queries.
 
 
-6. Construct a signed transaction:<br>
+6. Get the signature for the signed transaction:<br>
     Once the status is `COMPLETED`, get the first element of the Signed Messages (signedMessages parameter) array - this will be the signature used for the transaction.
 
     Example:<br>
     `sig = fbksTx["signedMessage"][0]["signature"] `
 
-7. Construct a signed transaction according to the returned value:
+7. Construct a signed transaction with the signature:<br>
+
     ```
     from eth_utils.curried import (keccak)
     from eth_account._utils.legacy_transactions import (encode_transaction)
     from eth_account.datastructures import SignedTransaction
     from hexbytes import HexBytes
-    …
+    ...
     fbksTx = fbks.get_transaction_by_id(txId)
     sig = fbksTx["signedMessage"][0]["signature"]
     sig["v"] = sig["v"] + 35 + (81 * 2) # EIP-155
