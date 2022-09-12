@@ -8,6 +8,7 @@ Raw signing is a mechanism which allows users to sign a payload of their choice.
 Such operations might be staking, custom blockchain features (for example Stellar’s clawback functionality) or adding private support for unsupported assets (in this lab we will perform transfers using the unsupported Zenith asset).
 
 ## Lab Prerequisites
+- Google drive [link](https://bit.ly/3ew8fnl]
 - Review the [security advisory](./README.md#span-stylecolorredsecurity-advisoryspan)
 - Intermediate Python knowledge
 - [Python](https://www.python.org/downloads/)
@@ -18,6 +19,7 @@ Such operations might be staking, custom blockchain features (for example Stella
     - hexbytes
     - eth-account
     - pycryptodome
+- [Code reference](/examples/advance.py)
 
 ## Lab Steps
 

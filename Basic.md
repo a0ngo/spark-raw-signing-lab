@@ -16,6 +16,7 @@ Examples of usages for either operation are:
 This lab will cover how Fireblocks’ API allows you to perform a simple proof of ownership signature, as well as a more complex EIP-712 signature.<br>
 
 ## Lab Prerequisites
+* Google drive [link](https://bit.ly/3ew8fnl)
 * Review the [security advisory](./README.md#span-stylecolorredsecurity-advisoryspan)
 * Basic Javascript knowledge
 * [NodeJS](https://nodejs.org/en/download/) 
@@ -23,7 +24,7 @@ This lab will cover how Fireblocks’ API allows you to perform a simple proof o
 * The following modules:
     * [js-sha256](https://www.npmjs.com/package/js-sha256)
     * [fireblocks-sdk](https://www.npmjs.com/package/fireblocks-sdk)
-
+* [Code reference](/examples/basic.js)
 
 ## Lab Steps
 1. Create a new Vault Account with Eth_Test wallet:
@@ -152,7 +153,7 @@ content:<br>
 This step is provided for completeness, this would usually be done by the counterparty in order to verify that the provided signature really came from the wallet \ address that you are claiming ownership over.<br>
 
     * Go to: https://toolkit.abdk.consulting/ethereum#recover-address
-    * Under Recover Address select Hash radio button.
+    * Under Recover Address select Hash radio button
     * From the output that you printed in the previous step, copy the value of the two following parameters:
 
         * `content`
